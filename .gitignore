@@ -3,3 +3,4 @@ setup.exe
 src/GIT_DESCRIBE.cs
 html
 efi_test/
+gnu-efi-out/

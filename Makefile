@@ -4,8 +4,8 @@ CFLAGS += -I$(GNUEFI_INC) -I$(GNUEFI_INC)/$(GNUEFI_ARCH) -I$(GNUEFI_INC)/protoco
 LDFLAGS = -nostdlib -shared -Wl,-dll -Wl,--subsystem,10 -e _EfiMain
 LIBS    = -L$(GNUEFI_LIB) -lefi -lgcc
 
-GNUEFI_INC = /usr/$(CC_PREFIX)/include/efi
-GNUEFI_LIB = /usr/$(CC_PREFIX)/lib
+GNUEFI_INC = gnu-efi-out/$(CC_PREFIX)/include/efi
+GNUEFI_LIB = gnu-efi-out/$(CC_PREFIX)/lib
 
 FILES_C = src/main.c src/util.c src/types.c src/config.c
 FILES_H = $(wildcard src/*.h)
@@ -15,9 +15,11 @@ CFLAGS += '-DGIT_DESCRIBE=L"$(GIT_DESCRIBE)"'
 ZIPDIR = HackBGRT-$(GIT_DESCRIBE:v%=%)
 ZIP = $(ZIPDIR).zip
 
-all: efi setup zip
+all: gnu-efi efi setup zip
 efi: bootx64.efi bootia32.efi
 setup: setup.exe
+
+.PHONY: clean testx64-qemu gnu-efi-x64 gnu-efi-ia32
 
 zip: $(ZIP)
 $(ZIP): bootx64.efi bootia32.efi config.txt splash.bmp setup.exe README.md CHANGELOG.md README.efilib LICENSE
@@ -45,12 +47,34 @@ bootia32.efi: $(FILES_C)
 
 clean:
 	rm -f bootx64.efi bootia32.efi
+	rm -rf gnu-efi-out/
+	$(MAKE) -C submodules/gnu-efi clean
 	rm -f setup.exe
 	rm -rf efi_test/
 
-testx64-qemu: bootx64.efi config.txt splash.bmp
+testx64-qemu: gnu-efi bootx64.efi config.txt splash.bmp
 	mkdir -p efi_test/EFI/HackBGRT
 	cp bootx64.efi efi_test/EFI/HackBGRT/loader.efi && echo "bootx64 okay"
 	cp config.txt splash.bmp efi_test/EFI/HackBGRT/ && echo "aux files okay"
 	qemu-system-x86_64 -L /usr/share/ovmf/ --bios OVMF.fd -drive media=disk,file=fat:rw:./efi_test,format=raw -net none -serial stdio
 	# hit escape during boot, go to Boot Manager Maintenance, select Boot From File, select QEMU VVFAT, navigate to EFI>HackBGRT>loader.efi
+
+gnu-efi: gnu-efi-x64 gnu-efi-ia32
+
+gnu-efi-x64:
+	$(MAKE) -C submodules/gnu-efi ARCH=x86_64 CC=x86_64-w64-mingw32-gcc lib
+	
+	mkdir -p gnu-efi-out/x86_64-w64-mingw32/include
+	mkdir -p gnu-efi-out/x86_64-w64-mingw32/lib
+	
+	cp -a submodules/gnu-efi/inc gnu-efi-out/x86_64-w64-mingw32/include/efi
+	cp -a submodules/gnu-efi/x86_64/lib/libefi.a gnu-efi-out/x86_64-w64-mingw32/lib/libefi.a
+
+gnu-efi-ia32:
+	$(MAKE) -C submodules/gnu-efi ARCH=ia32 CC=i686-w64-mingw32-gcc lib
+	
+	mkdir -p gnu-efi-out/i686-w64-mingw32/include
+	mkdir -p gnu-efi-out/i686-w64-mingw32/lib
+	
+	cp -a submodules/gnu-efi/inc gnu-efi-out/i686-w64-mingw32/include/efi
+	cp -a submodules/gnu-efi/ia32/lib/libefi.a gnu-efi-out/i686-w64-mingw32/lib/libefi.a
