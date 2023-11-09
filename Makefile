@@ -1,5 +1,5 @@
 CC      = $(CC_PREFIX)-gcc
-CFLAGS  = -std=c11 -O2 -ffreestanding -mno-red-zone -fno-stack-protector -Wshadow -Wall -Wunused -Werror-implicit-function-declaration -Werror
+CFLAGS  = -std=c11 -O2 -ffreestanding -mno-red-zone -fno-stack-protector -Wshadow -Wall -Wunused -Werror-implicit-function-declaration -Werror -fshort-wchar -Wall -fno-builtin -mno-mmx -mno-sse -maccumulate-outgoing-args
 CFLAGS += -I$(GNUEFI_INC) -I$(GNUEFI_INC)/$(GNUEFI_ARCH) -I$(GNUEFI_INC)/protocol
 LDFLAGS = -nostdlib -shared -Wl,-dll -Wl,--subsystem,10 -e _EfiMain
 LIBS    = -L$(GNUEFI_LIB) -lefi -lgcc
