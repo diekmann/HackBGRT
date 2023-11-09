@@ -401,7 +401,9 @@ static EFI_HANDLE LoadApp(print_t* print_failure, EFI_HANDLE image_handle, EFI_L
  * The main program.
  */
 EFI_STATUS EFIAPI EfiMain(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *ST_) {
+	ST_->ConOut->OutputString(ST_->ConOut, L"Hello, World from EfiMain.\r\n");
 	InitializeLib(image_handle, ST_);
+	ST_->ConOut->OutputString(ST_->ConOut, L"InitializeLib done.\r\n");
 
 	EFI_LOADED_IMAGE* image;
 	if (EFI_ERROR(BS->HandleProtocol(image_handle, &LoadedImageProtocol, (void**) &image))) {
@@ -493,5 +495,6 @@ EFI_STATUS EFIAPI EfiMain(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *ST_) {
  * Some compilers and architectures differ in underscore handling. This helps.
  */
 EFI_STATUS EFIAPI _EfiMain(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *ST_) {
+	ST_->ConOut->OutputString(ST_->ConOut, L"Hello, World from _EfiMain.\r\n");
 	return EfiMain(image_handle, ST_);
 }

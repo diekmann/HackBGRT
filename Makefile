@@ -1,6 +1,6 @@
 CC      = $(CC_PREFIX)-gcc
-CFLAGS  = -std=c11 -O2 -ffreestanding -mno-red-zone -fno-stack-protector -Wshadow -Wall -Wunused -Werror-implicit-function-declaration -Werror -fshort-wchar -Wall -fno-builtin -mno-mmx -mno-sse -maccumulate-outgoing-args
-CFLAGS += -I$(GNUEFI_INC) -I$(GNUEFI_INC)/$(GNUEFI_ARCH) -I$(GNUEFI_INC)/protocol
+CFLAGS  = -g -std=c11 -O0 -ffreestanding -mno-red-zone -fno-stack-protector -Wshadow -Wall -Wunused -Werror-implicit-function-declaration -Werror -fshort-wchar -Wall -fno-builtin -mno-mmx -mno-sse -maccumulate-outgoing-args
+CFLAGS += -I$(shell $(CC) -print-file-name=include) -nostdinc -I$(GNUEFI_INC) -I$(GNUEFI_INC)/$(GNUEFI_ARCH) -I$(GNUEFI_INC)/protocol
 LDFLAGS = -nostdlib -shared -Wl,-dll -Wl,--subsystem,10 -e _EfiMain
 LIBS    = -L$(GNUEFI_LIB) -lefi -lgcc
 
@@ -16,7 +16,7 @@ ZIPDIR = HackBGRT-$(GIT_DESCRIBE:v%=%)
 ZIP = $(ZIPDIR).zip
 
 all: gnu-efi efi setup zip
-efi: bootx64.efi bootia32.efi
+efi: bootx64.efi
 setup: setup.exe
 
 .PHONY: clean testx64-qemu gnu-efi-x64 gnu-efi-ia32
@@ -38,12 +38,7 @@ setup.exe: $(FILES_CS) src/GIT_DESCRIBE.cs
 bootx64.efi: CC_PREFIX = x86_64-w64-mingw32
 bootx64.efi: GNUEFI_ARCH = x86_64
 bootx64.efi: $(FILES_C)
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS) -s
-
-bootia32.efi: CC_PREFIX = i686-w64-mingw32
-bootia32.efi: GNUEFI_ARCH = ia32
-bootia32.efi: $(FILES_C)
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS) -s
+	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@ $(LIBS)
 
 clean:
 	rm -f bootx64.efi bootia32.efi
@@ -52,14 +47,12 @@ clean:
 	rm -f setup.exe
 	rm -rf efi_test/
 
-testx64-qemu: gnu-efi bootx64.efi config.txt splash.bmp
+testx64-qemu: gnu-efi-x64 bootx64.efi config.txt splash.bmp
 	mkdir -p efi_test/EFI/HackBGRT
 	cp bootx64.efi efi_test/EFI/HackBGRT/loader.efi && echo "bootx64 okay"
 	cp config.txt splash.bmp efi_test/EFI/HackBGRT/ && echo "aux files okay"
 	echo 'fs0:\EFI\HackBGRT\loader.efi' > efi_test/startup.nsh
 	qemu-system-x86_64 -L /usr/share/ovmf/ --bios OVMF.fd -drive media=disk,file=fat:rw:./efi_test,format=raw -net none -serial stdio
-
-gnu-efi: gnu-efi-x64 gnu-efi-ia32
 
 gnu-efi-x64:
 	$(MAKE) -C submodules/gnu-efi ARCH=x86_64 CC=x86_64-w64-mingw32-gcc lib
@@ -69,12 +62,3 @@ gnu-efi-x64:
 	
 	cp -a submodules/gnu-efi/inc gnu-efi-out/x86_64-w64-mingw32/include/efi
 	cp -a submodules/gnu-efi/x86_64/lib/libefi.a gnu-efi-out/x86_64-w64-mingw32/lib/libefi.a
-
-gnu-efi-ia32:
-	$(MAKE) -C submodules/gnu-efi ARCH=ia32 CC=i686-w64-mingw32-gcc lib
-	
-	mkdir -p gnu-efi-out/i686-w64-mingw32/include
-	mkdir -p gnu-efi-out/i686-w64-mingw32/lib
-	
-	cp -a submodules/gnu-efi/inc gnu-efi-out/i686-w64-mingw32/include/efi
-	cp -a submodules/gnu-efi/ia32/lib/libefi.a gnu-efi-out/i686-w64-mingw32/lib/libefi.a
