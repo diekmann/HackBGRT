@@ -55,7 +55,7 @@ testx64-qemu: gnu-efi-x64 bootx64.efi config.txt splash.bmp
 	qemu-system-x86_64 -L /usr/share/ovmf/ --bios OVMF.fd -drive media=disk,file=fat:rw:./efi_test,format=raw -net none -serial stdio
 
 gnu-efi-x64:
-	$(MAKE) -C submodules/gnu-efi ARCH=x86_64 CC=x86_64-w64-mingw32-gcc lib
+	$(MAKE) -C submodules/gnu-efi ARCH=x86_64 CROSS_COMPILE=x86_64-w64-mingw32- lib
 	
 	mkdir -p gnu-efi-out/x86_64-w64-mingw32/include
 	mkdir -p gnu-efi-out/x86_64-w64-mingw32/lib

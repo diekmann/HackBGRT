@@ -397,11 +397,17 @@ static EFI_HANDLE LoadApp(print_t* print_failure, EFI_HANDLE image_handle, EFI_L
 	return result;
 }
 
+#if defined(uefi_call_wrapper)
+#undef uefi_call_wrapper
+#define uefi_call_wrapper(func, va_num, ...) func(__VA_ARGS__)
+#endif
+
 /**
  * The main program.
  */
 EFI_STATUS EFIAPI EfiMain(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *ST_) {
-	ST_->ConOut->OutputString(ST_->ConOut, L"Hello, World from EfiMain.\r\n");
+	ST_->ConOut->OutputString(ST_->ConOut, L"Hello, World from EfiMain (17).\r\n");
+	uefi_call_wrapper(ST_->ConOut->OutputString, 2, ST_->ConOut, L"Hello, World from EfiMain via uefi_call_wrapper.\r\n");
 	InitializeLib(image_handle, ST_);
 	ST_->ConOut->OutputString(ST_->ConOut, L"InitializeLib done.\r\n");
 
