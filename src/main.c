@@ -397,10 +397,10 @@ static EFI_HANDLE LoadApp(print_t* print_failure, EFI_HANDLE image_handle, EFI_L
 	return result;
 }
 
-#if defined(uefi_call_wrapper)
-#undef uefi_call_wrapper
-#define uefi_call_wrapper(func, va_num, ...) func(__VA_ARGS__)
-#endif
+//#if defined(uefi_call_wrapper)
+//#undef uefi_call_wrapper
+//#define uefi_call_wrapper(func, va_num, ...) func(__VA_ARGS__)
+//#endif
 
 /**
  * The main program.
