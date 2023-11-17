@@ -55,7 +55,11 @@ testx64-qemu: gnu-efi-x64 bootx64.efi config.txt splash.bmp
 	qemu-system-x86_64 -L /usr/share/ovmf/ --bios OVMF.fd -drive media=disk,file=fat:rw:./efi_test,format=raw -net none -serial stdio
 
 gnu-efi-x64:
-	$(MAKE) -C submodules/gnu-efi ARCH=x86_64 CROSS_COMPILE=x86_64-w64-mingw32- lib
+	# There seems to be a bug in gnu-efi when compiling with mingw:
+	# mingw adds a -win10 suffix to the gcc version number.
+	# this makes the GCCNEWENOUGH check fail
+	# therefore, we set CPPFLAGS, in particular GNU_EFI_USE_MS_ABI, manually.
+	$(MAKE) -C submodules/gnu-efi ARCH=x86_64 CROSS_COMPILE=x86_64-w64-mingw32- CPPFLAGS='-DGNU_EFI_USE_MS_ABI -maccumulate-outgoing-args --std=c11' lib
 	
 	mkdir -p gnu-efi-out/x86_64-w64-mingw32/include
 	mkdir -p gnu-efi-out/x86_64-w64-mingw32/lib
