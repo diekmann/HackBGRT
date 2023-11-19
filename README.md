@@ -79,3 +79,38 @@ If something breaks and you can't boot to Windows, you need to use the Windows i
 * Compiler: GCC targeting w64-mingw32
 * Compiler flags: see Makefile
 * Libraries: gnu-efi
+
+```shell
+$ git clone
+...
+$ git submodule init
+Submodule 'submodules/gnu-efi' (https://git.code.sf.net/p/gnu-efi/code) registered for path 'submodules/gnu-efi'
+$ git submodule update
+Cloning into '/tmp/hack/HackBGRT/submodules/gnu-efi'...
+Submodule path 'submodules/gnu-efi': checked out '8b018e67212957de176292f95718df48f49a418b'
+$ make testx64-qemu
+...
+lots of compilation output
+...
+qemu window showing up, a 5 second startup.nsh timeout appears.
+Then, qemu should show the following:
+Shell> fs0:\EFI\HackBGRT\loader.efi
+Hello, World from _EfiMain.
+Hello, World from EfiMain (17).
+Hello, World from EfiMain via uefi_call_wrapper.
+InitializeLib done.
+HackBGRT: Failed to load application \EFI\HackBGRT\bootmgfw-original.efi.
+HackBGRT: Failed to load application \EFI\Microsoft\Boot\bootmgfw.efi.
+HackBGRT has failed. Use parameter debug=1 for details.
+Get a Windows install disk or a recovery disk to fix your boot.
+HackBGRT version: unknown
+Press any key (or wait 15 seconds) to exit.
+<this shows that the compiled binary is likely to work>
+<close qemu>
+$ make
+...
+Files read from disk: 8
+Archive size: 199882 bytes (196 KiB)
+Everything is Ok
+rm -rf "HackBGRT-unknown"
+```
