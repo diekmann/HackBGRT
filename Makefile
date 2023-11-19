@@ -15,14 +15,14 @@ CFLAGS += '-DGIT_DESCRIBE=L"$(GIT_DESCRIBE)"'
 ZIPDIR = HackBGRT-$(GIT_DESCRIBE:v%=%)
 ZIP = $(ZIPDIR).zip
 
-all: gnu-efi efi setup zip
+all: gnu-efi-x64 efi setup zip
 efi: bootx64.efi
 setup: setup.exe
 
-.PHONY: clean testx64-qemu gnu-efi-x64 gnu-efi-ia32
+.PHONY: clean testx64-qemu gnu-efi-x64
 
 zip: $(ZIP)
-$(ZIP): bootx64.efi bootia32.efi config.txt splash.bmp setup.exe README.md CHANGELOG.md README.efilib LICENSE
+$(ZIP): bootx64.efi config.txt splash.bmp setup.exe README.md CHANGELOG.md README.efilib LICENSE
 	test ! -d "$(ZIPDIR)"
 	mkdir "$(ZIPDIR)"
 	cp -a $^ "$(ZIPDIR)" || (rm -rf "$(ZIPDIR)"; exit 1)
